@@ -7,7 +7,7 @@ export class ShoppingCartPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.shoppingCartLink = page.getByRole('link', { name: 'Shopping cart' }).first();
+    this.shoppingCartLink = page.getByRole('link', { name: /^Shopping cart \(\d+\)$/ });
     this.cartProductNames = page.locator('.shopping-cart-page .product-name');
   }
 
@@ -16,6 +16,6 @@ export class ShoppingCartPage {
   }
 
   async verifyProductInCart(expectedProductName: string) {
-    await expect(this.cartProductNames).toContainText(expectedProductName);
+    await expect(this.cartProductNames).toHaveText(expectedProductName);
   }
 }

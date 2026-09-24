@@ -30,7 +30,7 @@ export class RegisterPage {
   }
 
   async navigateToRegister() {
-    await this.page.goto('https://demowebshop.tricentis.com');
+    await this.page.goto('/');
     await this.page.getByRole('link', { name: 'Register' }).click();
   }
 

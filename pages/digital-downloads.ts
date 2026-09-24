@@ -1,16 +1,20 @@
 import { Page, Locator, expect } from '@playwright/test';
 
+const ADD_TO_CART_TIMEOUT = 10000;
+
 export class DigitalDownloadsPage {
   readonly page: Page;
   readonly categoryLink: Locator;
   readonly productItems: Locator;
   readonly notificationSuccessBar: Locator;
+  readonly detailsPageAddToCartButton: Locator;
 
   constructor(page: Page) {
     this.page = page;
     this.categoryLink = page.getByRole('link', { name: 'Digital downloads' }).first();
     this.productItems = page.locator('.product-item');
     this.notificationSuccessBar = page.locator('#bar-notification .content');
+    this.detailsPageAddToCartButton = page.locator('.add-to-cart-button').first();
   }
 
   async navigateToDigitalDownloads() {
@@ -31,16 +35,22 @@ export class DigitalDownloadsPage {
 
     const addToCartButton = selectedProduct.getByRole('button', { name: 'Add to cart' });
     await addToCartButton.click();
- 
-    if (this.page.url().includes('/3rd-album') || this.page.url().includes('album')) {
-      const detailsAddToCartBtn = this.page.locator('.add-to-cart-button').first();
-      if (await detailsAddToCartBtn.isVisible()) {
-        await detailsAddToCartBtn.click();
-      }
-    }
 
-    await expect(this.notificationSuccessBar).toBeVisible({ timeout: 10000 });
+    await this.confirmProductAddedToCart();
 
     return productName.trim();
+  }
+
+  private async confirmProductAddedToCart() {
+    await Promise.race([
+      this.notificationSuccessBar.waitFor({ state: 'visible', timeout: ADD_TO_CART_TIMEOUT }),
+      this.detailsPageAddToCartButton.waitFor({ state: 'visible', timeout: ADD_TO_CART_TIMEOUT }),
+    ]).catch(() => {});
+
+    if (await this.detailsPageAddToCartButton.isVisible()) {
+      await this.detailsPageAddToCartButton.click();
+    }
+
+    await expect(this.notificationSuccessBar).toBeVisible({ timeout: ADD_TO_CART_TIMEOUT });
   }
 }
